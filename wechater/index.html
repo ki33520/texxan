@@ -2,7 +2,7 @@
 <html>
 	<head>
 		<meta charset="utf-8">
-		<title>wechater</title>
+		<title>这样的孩子给我来十打!</title>
 		<meta name="format-detection" content="telephone=no" />
 		<script type="text/javascript" src="src/js/flexible.min.js"></script>
 		<link rel="stylesheet" type="text/css" href="src/css/main.css">
@@ -12,7 +12,19 @@
 		<div id="app">
 			<loading-page :p-percent="percentStr"></loading-page>
 			<div class="main-page" v-show="step>0" :class="{'animated fadeIn': step>0}">
-				<bubble-item :p-bubbles="bubbles"></bubble-item>
+				<div class="messages-1" v-bind:class="{'animated quickly slideInRight show': true}" v-on:animationend.self="animateEnd">
+					
+					<message-os :p-messages="messages1"></message-os>
+					<message-item :p-messages="messages1"></message-item>
+					<message-enter :p-messages="messages1"></message-enter>
+				</div>
+				<div class="messages-2" v-on:animationend.self="animateEnd">
+					<message-item :p-messages="messages2"></message-item>
+					<message-enter :p-messages="messages2"></message-enter>
+				</div>
+				<div class="contacts" v-on:animationend.self="animateEnd">
+					联系人
+				</div>
 			</div>
 		</div>
 
