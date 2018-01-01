@@ -17,101 +17,26 @@
 	scroll();
 };
 var templates = {
-	loadingPage: '<div id="loadingPage" v-on:animationend="animateEnd" class="loading-page animated" v-bind:class="{fadeOut: fadeout}" v-show="show">\
+	loadingPage: '<div id="loadingPage" @animationend="animateEnd" class="loading-page fast animated" :class="{fadeOut: this.pLoading.percent >= 100}" v-show="!pLoading.done">\
 		<div class="flex-hv-center h100">\
 			<div class="loading">\
 				<div class="logo"><img class="block" src="src/images/logo.png" /></div>\
 				<div class="loading-bar">\
-					<div class="loading-line" :style="{width: pPercent}"></div>\
+					<div class="loading-line" :style="{width: pLoading.percent+\'\%\'}"></div>\
 				</div>\
 			</div>\
 		</div>\
 	</div>',
-	message: '<div class="messages">\
-		<div class="wrap-messages" ref="wrapMessages" id="wrapMessages">\
-			<div class="wrap-messages-inner" ref="wrapMessagesInner" id="wrapMessagesInner">\
-				<div class="message animated fast slideInUp" v-for="(el,key) in pMessages">\
-					<div class="message-inner flex" v-if="!el.right">\
-						<div class="avatar"><img :src="el.avatarpic" /></div>\
-						<div class="content">\
-							<div class="bubble">\
-								<div class="bubble_cont">\
-									<div class="plain">\
-										<pre>{{el.msg}}</pre>\
-									</div>\
-								</div>\
-							</div>\
-						</div>\
-					</div>\
-					<div class="message-inner flex-h-right" v-if="el.right">\
-						<div class="content">\
-							<div class="bubble">\
-								<div class="bubble_cont">\
-									<div class="plain">\
-										<pre>{{el.msg}}</pre>\
-									</div>\
-								</div>\
-							</div>\
-						</div>\
-						<div class="avatar"><img :src="el.avatarpic" /></div>\
-					</div>\
+	messageView: '<div class="message-view animated" :class="{fadeIn: pLoading.percent >= 100}">\
+		<div style="position: absolute; left: 0; top: 0; z-index: 100">{{pMessage.steps}}</div>\
+		<div class="view-item animated" :class="styles(el,key)" v-show="pMessage.steps[0] === key" v-for="(el,key) in pMessage.items" @click="play">\
+			<div class="pops">\
+				<div class="animated"  @animationend="animateEnd" :class="styles(item,index)" v-show="pMessage.steps[0] === key && pMessage.steps[1] === index" v-for="(item,index) in el.nodes" :style="{left: item.left, top: item.top}">\
+					<div class="wrap-img"><img class="block" :src="\'src/images/\'+item.pop" /></div>\
 				</div>\
 			</div>\
-		</div>\
-	</div>',
-	messageEnter: '<div class="board-enter">\
-		<div class="board-top flex">\
-			<div class="input-enter icon-input flex-v-center">\
-				<p class="flex-h-right">{{nextEnterMsg}}</p>\
-				<span class="line-flash animated infinite slow flash"></span>\
-			</div>\
-		</div>\
-		<div class="board-key">\
-			<div class="btn icon-send flex-hv-center" v-bind:class="{active: sendBtnActive}" @keydown="send">发送</div>\
-		</div>\
-	</div>',
-	messageView: '<div class="message-view">\
-		<div class="messages">\
-			<div class="wrap-messages" ref="wrapMessages" id="wrapMessages">\
-				<div class="wrap-messages-inner" ref="wrapMessagesInner" id="wrapMessagesInner">\
-					<div class="message animated fast slideInUp" v-for="(el,key) in pMessages">\
-						<div class="message-inner flex" v-if="!el.right">\
-							<div class="avatar"><img :src="el.avatarpic" /></div>\
-							<div class="content">\
-								<div class="bubble">\
-									<div class="bubble_cont">\
-										<div class="plain">\
-											<pre>{{el.msg}}</pre>\
-										</div>\
-									</div>\
-								</div>\
-							</div>\
-						</div>\
-						<div class="message-inner flex-h-right" v-if="el.right">\
-							<div class="content">\
-								<div class="bubble">\
-									<div class="bubble_cont">\
-										<div class="plain">\
-											<pre>{{el.msg}}</pre>\
-										</div>\
-									</div>\
-								</div>\
-							</div>\
-							<div class="avatar"><img :src="el.avatarpic" /></div>\
-						</div>\
-					</div>\
-				</div>\
-			</div>\
-		</div>\
-		<div class="board-enter">\
-			<div class="board-top flex">\
-				<div class="input-enter icon-input flex-v-center">\
-					<p class="flex-h-right">{{nextEnterMsg}}</p>\
-					<span class="line-flash animated infinite slow flash"></span>\
-				</div>\
-			</div>\
-			<div class="board-key">\
-				<div class="btn icon-send flex-hv-center" v-bind:class="{active: sendBtnActive}">发送</div>\
+			<div class="bg">\
+				<div class="wrap-img"><img class="block" :src="\'src/images/\'+el.bg" /></div>\
 			</div>\
 		</div>\
 	</div>'
@@ -119,250 +44,209 @@ var templates = {
 
 var loadingPage = Vue.extend({
 	template: templates.loadingPage,
-	data: function(){
-		return {
-			show: true
-		}
-	},
-	props: ['pPercent'],
+	props: ['pLoading'],
 	methods: {
-		animateEnd: function(e){
-			this.show = false;
-		}
-	},
-	computed: {
-		fadeout: function(){
-			return Number(this.pPercent.replace('%','')) >= 100;
-		}
-	}
-});
-
-var message = Vue.extend({
-	template: templates.message,
-	data: function(){
-		return {
-			
-		}
-	},
-	props: ['pMessages'],
-	watch: {
-		pMessages: {
-			handler: function(a,b){
-				var self = this;
-				this.$nextTick(function(){
-					var contentH = $(self.$refs.wrapMessagesInner).height();
-					var viewH = $(self.$refs.wrapMessages).height();
-					console.log(contentH,viewH)
-					$(self.$refs.wrapMessages).scrollSmooth(contentH - viewH + 16, 300)
-				});
-			},
-			deep: true
-		}
-	},
-	methods: {
-		
-	}
-});
-
-var messageEnter = Vue.extend({
-	template: templates.messageEnter,
-	data: function(){
-		return {
-			nextEnterMsg: '新年快乐啊新年快乐啊新年快乐啊新年快乐啊新年快乐啊!',
-			sendBtnActive: false
-		}
-	},
-	props: ['pMessages'],
-	methods: {
-		showOs: function(){
-			setTimeout(function(){
-
-			},1000)
-		},
-		send: function(e){
+		loading: function(){
 			var self = this;
-			this.sendBtnActive = true;
 			setTimeout(function(){
-				self.pMessages.push({
-					right: true,
-					msg: self.nextEnterMsg,
-					avatarpic: 'src/images/logo.png',
-				})
-				self.nextEnterMsg = null;
-				self.sendBtnActive = false;
-				self.showOs()
-				// setTimeout(function(){
-				// 	self.$parent.show = 1;
-				// 	self.$parent.animated = 1;
-				// },2000)
-			},100)
+				self.pLoading.percent++;
+				if(self.pLoading.percent < 100){
+					self.loading();
+				}else{
+					setTimeout(function(){
+						if(!self.pLoading.done){
+							self.pLoading.done = true;
+						}
+					},2000);
+				}
+			},1)
+		},
+		animateEnd: function(e){
+			console.log('loading hide')
+			this.pLoading.done = true;
 		}
 	},
 	mounted: function(){
-		var self = this;
-		setTimeout(function(){
-			self.send();
-		},1000)
+		this.loading();
 	}
-})
+});
 
 var messageView = Vue.extend({
 	template: templates.messageView,
 	data: function(){
 		return {
-			nextEnterMsg: '新年快乐啊新年快乐啊新年快乐啊新年快乐啊新年快乐啊!',
-			sendBtnActive: false
+			playing: false,
+			stop: false
 		}
 	},
-	props: ['pMessages'],
 	watch: {
-		pMessages: {
+		'pLoading.done': {
 			handler: function(a,b){
-				var self = this;
-				this.$nextTick(function(){
-					var contentH = $(self.$refs.wrapMessagesInner).height();
-					var viewH = $(self.$refs.wrapMessages).height();
-					console.log(contentH,viewH)
-					$(self.$refs.wrapMessages).scrollSmooth(contentH - viewH + 16, 300)
-				});
+				this.playing = a;
+				this.start();
+			},
+			deep: true
+		},
+		'pMessage.steps': {
+			handler: function(a,b){
+				if(a[0] === 0 && a[1] === 2){
+					//this.pause();
+				}
 			},
 			deep: true
 		}
 	},
+	props: ['pMessage','pLoading'],
 	methods: {
-		showOs: function(){
-			setTimeout(function(){
-
-			},1000)
+		styles: function(item,index){
+			var obj = {};
+			obj[item.animateType] = item.animateType;
+			obj[item.speed] = item.speed;
+			if(item.pop){
+				obj['pop'] = true;
+				obj['pop-'+index] = true;
+				if(item.type === 2){
+					obj['os'] = true;
+				}
+			}else{
+				obj['view-item-'+index] = true;
+			}
+			return obj;
 		},
-		send: function(e){
+		next: function(){
 			var self = this;
-			this.sendBtnActive = true;
+			//console.log(self.pMessage.steps)
+			if(this.playing === true){
+				var a = self.pMessage.steps[0];
+				var b = self.pMessage.steps[1];
+				b++;
+				if(self.pMessage.items[a].nodes[b]){
+					self.pMessage.steps = [a,b];
+				}else{
+					a++;
+					if(self.pMessage.items[a]){
+						self.pMessage.steps = [a,0];
+					}else{
+						self.playing = false;
+						self.stop = true;
+					}
+				}
+			}
+		},
+		pause: function(){
+			this.playing = false;
+		},
+		play: function(){
+			this.playing = true;
+			this.next();
+		},
+		animateEnd: function(e){
+			var self = this;
+			var a = self.pMessage.steps[0];
+			var b = self.pMessage.steps[1];
+			var delay = self.pMessage.items[a].nodes[b].delay*1000 || 500;
 			setTimeout(function(){
-				self.pMessages.push({
-					right: true,
-					msg: self.nextEnterMsg,
-					avatarpic: 'src/images/logo.png',
-				})
-				self.nextEnterMsg = null;
-				self.sendBtnActive = false;
-				self.showOs()
-				// setTimeout(function(){
-				// 	self.$parent.show = 1;
-				// 	self.$parent.animated = 1;
-				// },2000)
-			},100)
+				self.next();
+			},delay)
+		},
+		start: function(){
+			this.pMessage.steps = [0,0];
 		}
 	},
 	mounted: function(){
 		var self = this;
-		setTimeout(function(){
-			self.send();
-		},1000)
+		//this.pMessage.type = 1;
 	}
-})
+});
 
 var indexApp = new Vue({
 	el: '#app',
 	data : function(){
 		return {
-			step: 0,
-			percent: 0,
-			messages1: [
-				{
-					msg: '爸爸妈妈新年快乐',
-					avatarpic: 'src/images/logo.png',
-				},
-				{
-					right: true,
-					msg: '新年快乐啊',
-					avatarpic: 'src/images/logo.png',
-				},
-				{
-					msg: '爸爸妈妈新年快乐1',
-					avatarpic: 'src/images/logo.png',
-				},
-				{
-					right: true,
-					msg: '新年快乐啊1',
-					avatarpic: 'src/images/logo.png',
-				},
-				{
-					right: true,
-					msg: '新年快乐啊2',
-					avatarpic: 'src/images/logo.png',
-				}
-			],
-			messages2: [
-				{
-					msg: '爸爸妈妈新年快乐',
-					avatarpic: 'src/images/logo.png',
-				},
-				{
-					right: true,
-					msg: '新年快乐啊',
-					avatarpic: 'src/images/logo.png',
-				},
-				{
-					msg: '爸爸妈妈新年快乐1',
-					avatarpic: 'src/images/logo.png',
-				},
-				{
-					right: true,
-					msg: '新年快乐啊1',
-					avatarpic: 'src/images/logo.png',
-				},
-				{
-					right: true,
-					msg: '新年快乐啊2',
-					avatarpic: 'src/images/logo.png',
-				}
-			],
-			animate: 0,
-			show: 0
+			loadingObj: {
+				done: false,
+				percent: 0
+			},
+			messageObj: {
+				steps: new Array(2),
+				items: [
+					{
+						view: 0,
+						bg: 'bg_1.jpg',
+						animateType: 'fadeIn',
+						speed: 'fast',
+						nodes: [
+							{
+								pop: 'pop_1_1.png',
+								left: "10%",
+								top: "10%",
+								animateType: 'zoomIn'
+							},
+							{
+								pop: 'pop_1_2.png',
+								left: "50%",
+								top: "40%",
+								animateType: 'jackInTheBox'
+							},
+							{
+								type: 2,
+								pop: 'os_1.png',
+								animateType: 'fadeIn',
+								speed: 'fast',
+								delay: 2
+							}
+						]
+					},
+					{
+						view: 1,
+						bg: 'bg_2.jpg',
+						animateType: 'fadeIn',
+						speed: 'fast',
+						nodes: [
+							{
+								pop: 'pop_2_1.png',
+								left: "10%",
+								top: "10%",
+								animateType: 'jackInTheBox'
+							},
+							{
+								pop: 'pop_2_2.png',
+								left: "50%",
+								top: "40%",
+								animateType: 'fadeIn'
+							}
+						]
+					}
+				]
+			}
 		}
 	},
 	watch: {
-		step: {
+		messageObj: {
 			handler: function(a,b){
-				console.log(a,b)
+				//console.log(a,b)
+			},
+			deep: true
+		},
+		type: {
+			handler: function(a,b){
+				//this.$nextTick(function(){
+					console.log(a,b)
+				//});
 			},
 			deep: true
 		}
 	},
 	components: {
 		'message-view': messageView,
-		'message-item': message,
-		'loading-page': loadingPage,
-		'message-enter': messageEnter
+		'loading-page': loadingPage
 	},
 	methods: {
-		viewStart: function(){
-			var self = this;
-		},
-		loading: function(){
-			var self = this;
-			//setTimeout(function(){
-				self.percent++;
-				if(self.percent < 100){
-					self.loading()
-				}else{
-					self.viewStart()
-					self.step = 1;
-				}
-			//},1)
-		},
 		animateEnd: function(){
-			this.animate = null;
 			console.log(this)
 		}
 	},
-	computed: {
-		percentStr: function(){
-			return this.percent + '%';
-		}
-	},
 	mounted: function(){
-		this.loading();
+		
 	}
 });

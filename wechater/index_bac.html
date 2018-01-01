@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>这样的孩子给我来十打!</title>
+		<meta name="format-detection" content="telephone=no" />
+		<script type="text/javascript" src="src/js/flexible.min.js"></script>
+		<link rel="stylesheet" type="text/css" href="src/css/main_bac.css">
+		<link rel="stylesheet" type="text/css" href="src/css/animate.css">
+	</head>
+	<body>
+		<div id="app">
+			<loading-page :p-percent="percentStr"></loading-page>
+			<div class="main-page" v-if="step>0" :class="{'animated fadeIn': step>0}">
+				<div class="messages-1" v-bind:class="{'animated quickly slideInRight show': viewstep===0}" v-on:animationend.self="animateEnd">
+					<message-view :p-messages="messages1" :p-viewstep="viewstep"></message-view>
+				</div>
+				<div class="messages-2" v-bind:class="{'animated quickly slideInRight show': viewstep===1}" v-on:animationend.self="animateEnd">
+					<message-view :p-messages="messages2" :p-viewstep="viewstep"></message-view>
+				</div>
+				<div class="contacts" v-on:animationend.self="animateEnd">
+					联系人
+				</div>
+			</div>
+		</div>
+
+		<script type="text/javascript" src="src/js/vue.min.js"></script>
+		<script type="text/javascript" src="src/js/jquery.min.js"></script>
+		<script type="text/javascript" src="src/js/main_bac.js"></script>
+	</body>
+</html>
