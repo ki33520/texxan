@@ -40,7 +40,7 @@ var loadingPage = Vue.extend({
 	props: ['pLoading'],
 	data: function(){
 		return {
-			imgCount: 40,
+			imgCount: 45,
 			loaded: false
 		}
 	},
@@ -294,7 +294,7 @@ var indexApp = new Vue({
 							{
 								classes: 'os black flex-hv-center',
 								pop: 'os_2_3.png',
-								delay: 2,
+								delay: 1,
 								animateType: 'fadeIn'
 							}
 						]
@@ -331,7 +331,7 @@ var indexApp = new Vue({
 							{
 								classes: 'os black flex-hv-center',
 								pop: 'os_3_3.png',
-								delay: 2,
+								delay: 1,
 								animateType: 'fadeIn'
 							}
 						]
@@ -370,7 +370,7 @@ var indexApp = new Vue({
 							{
 								classes: 'os black flex-hv-center',
 								pop: 'os_4_2.png',
-								delay: 2,
+								delay: 1,
 								animateType: 'fadeIn'
 							}
 						]
@@ -501,9 +501,6 @@ var indexApp = new Vue({
 		animateEnd: function(){
 			console.log(this)
 		}
-	},
-	created: function(){
-		jQuery('audio').load();
 	},
 	mounted: function(){
 		var h = parseInt(jQuery(this.$el).width() * 2017 / 1242);
