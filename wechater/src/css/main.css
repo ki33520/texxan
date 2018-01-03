@@ -40,24 +40,8 @@ ins,a{text-decoration:none}
 
 .animated.fast{ animation-duration: 0.2s;}
 .animated.quickly{ animation-duration: 0.5s;}
+.animated.normal{ animation-duration: 1s;}
 .animated.slow{ animation-duration: 2s;}
-
-@keyframes flash-m {
-  from{
-    opacity: 1;
-  }
-  25%,75% {
-  	opacity: 1;
-  }
-  to {
-    opacity: 0;
-  }
-}
-
-.flash-m {
-  animation-name: flash-m;
-}
-
 
 html,body{ width: 100%; height: 100%; background-color: #fff;}
 body{ text-align: left; font-size: 0.4rem; line-height: 1.5; -webkit-font-smoothing: antialiased; font-family: "Noto Sans", NotoSans, "PingFangSC-Regular", sans-serif;}
@@ -68,7 +52,7 @@ body{ text-align: left; font-size: 0.4rem; line-height: 1.5; -webkit-font-smooth
 .hide{ display: none;}
 .block{ display: block;}
 .text-overflow,
-.text-overflow-2{ overflow: hidden;  display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; white-space:normal;}
+.text-overflow-2{ overflow: hidden;	display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; white-space:normal;}
 .text-overflow-2{ -webkit-line-clamp: 2;}
 .height-full,
 .wrap-scroll{ height: 100%;}
@@ -94,6 +78,7 @@ body{ text-align: left; font-size: 0.4rem; line-height: 1.5; -webkit-font-smooth
 .flex-9{-webkit-box-flex:9;-webkit-flex:9;-ms-flex:9;flex:9;}
 .flex-hv-center,
 .flex-v-center{-webkit-box-align:center;-webkit-align-items:center;-ms-flex-align:center;align-items:center;}
+.flex-v-bottom{-webkit-box-align:end;-webkit-align-items:flex-end;-ms-flex-align:flex-end;align-items:flex-end;}
 .flex-hv-center,
 .flex-h-center{-webkit-box-pack:center;-webkit-justify-content:center;-ms-flex-pack:center;justify-content:center;}
 .flex-h-right{-webkit-box-pack:justify;-webkit-justify-content:flex-end;-ms-flex-pack:justify;justify-content:flex-end;}
@@ -116,131 +101,158 @@ body{ text-align: left; font-size: 0.4rem; line-height: 1.5; -webkit-font-smooth
 
 
 /* index */
-#app{ height: 100%;}
+#app{ height: 100%; overflow: hidden;}
+/*#app::-webkit-scrollbar { display: none; }*/
 
-.loading-page{ height: 100%; width: 100%; position: fixed; z-index: 999; left: 0; top: 0; background-color: #da0011;}
+.loading-page{ height: 100%; width: 100%; position: fixed; z-index: 999; left: 0; top: 0; background-color: #db0011;}
 .loading-page.fadeOut{ }
-.loading{ margin-top: -20%;}
-.loading .logo{ width: 100%; text-align: center; margin-bottom: 1rem;}
-.loading .logo img{ width: 3.4848485rem; margin: 0 auto;}
-.loading-bar{ background-color: #b50614; position: relative; height: 0.24rem; width: 7.5rem; margin: 0 auto; border-radius: 0.12rem;}
+.loading{ margin-top: -30%; position: relative;}
+.loading .logo{ width: 100%; height: 1.3067rem; text-align: center; margin-bottom: 1rem;}
+.loading .logo.hidden{ visibility: hidden;}
+.loading .logo img{ width: 100%; margin: 0 auto;}
+.loading-bar{ background-color: #b50613; position: relative; height: 0.24rem; width: 7.5rem; margin: 0 auto; border-radius: 0.12rem;}
+.loading-bar.hidden{ visibility: hidden;}
 .loading-line{ background-color: #fff; position: absolute; height: 0.26rem; border-radius:0.13rem; top: -0.01rem; left: 0;}
+.btn-loaded{ position: absolute; left: 50%; top: 0; margin-left: -1.5rem; width: 3rem; height: 3rem; color: #fff; border-radius: 100%; font-size: 0.4rem;}
+.loading-page .text{ position: absolute; left: 0; bottom: 1rem;}
 
 .main-page{ height: 100%; width: 100%; overflow: hidden; position: relative; z-index: 9; background-color: #fff;}
 
 .message-view{ height: 100%; width: 100%; overflow: hidden;}
 .view-item{ position: relative; width: 100%; height: 100%; overflow: hidden;}
-.pops .bg{ width: 100%; height: 100%;}
-.pops .pop{ position: absolute; z-index: 9;}
-.pops .os{ position: absolute; left: 0; top: 0; width: 100%; height: 100%; z-index: 100;}
+.view-item .bg{ width: 100%; height: 100%;}
+.pops{ height: 100%; width: 100%; position: absolute; left: 0; top: 0;}
+.pops .pop{ position: absolute; z-index: 9; top: 7%;}
+.pops .os{ position: absolute; left: 0; top: 0; width: 100%; height: 100%; z-index: 100; background-color: rgba(43,43,43,0.9);}
+.pops .os.black{ background-color: #000;}
+.pops .os.space{ background-color: transparent;}
+.pops .os .wrap-img{ width: 100%;}
+.pops .os.flex-hv-center .wrap-img{ margin-top: -25%;}
+.pops .os.black .wrap-img{ margin-top: -25%;}
 
+.view-item-0 .pop-0{ width: 100%;}
 
-@keyframes fallDown1 {
+.view-item-1 .pop-0{ width: 46.6%; left: 14.3%;}
+.view-item-1 .pop-1,
+.view-item-1 .pop-3{ width: 48.6%; left: 29.3%; top: 9.175%;}
+.view-item-1 .pop-2{ width: 64.2%; left: 17.2%; top: 14.96%;}
+.view-item-1 .pop-4{ width: 81.9%; left: 10.3%; top: 11.2%;}
+.view-item-1 .os.pop-5 .wrap-img{ }
+.view-item-1 .pop-6{ width: 81.7%; left: 10.3%; top: 14.16%;}
+.view-item-1 .os.pop-7 .wrap-img{ }
+.view-item-1 .pop-8{ width: 48.9%; left: 23.8%; top: 9.85%;}
+.view-item-1 .pop-9{ width: 73.3%; left: 13.2%; top: 13.55%;}
+.view-item-1 .pop-10{ width: 64%; left: 18%; top: 13.55%;}
+
+.view-item-2 .pop-0{ width: 51.6%; left: 45.2%; top: 2.22%;}
+.view-item-2 .pop-1{ width: 54.8%; left: 33%; top: 14.62%;}
+
+.view-item-3 .pop-0{ width: 48.2%; left: 4.6%; top: 33.71%;}
+.view-item-3 .pop-1{ width: 38.6%; left: 12.1%; top: 38.52%;}
+.view-item-3 .pop-2{ width: 64%; left: 5.2%; top:54.73%;}
+.view-item-3 .pop-3{ width: 51.9%; left: 3.4%; top: 31.1%;}
+
+.view-item-4 .pop-0{ width: 51.6%; left: 44.3%; top: 1.1%;}
+.view-item-4 .pop-1{ width: 81.9%; left: 10.4%; top: 10.5%;}
+.view-item-4 .pop-2{ width: 48.9%; left: 45.1%; top: 5.2%;}
+.view-item-4 .pop-3{ width: 84.3%; left: 9.3%; top: 10.9%;}
+
+.view-item-5{ background-color: #c43724;}
+.view-item-5 .pop-0{ width: 103.3%; left: -3.3%; top: 0;}
+.view-item-5 .bg{ position: relative; z-index: 999;}
+
+.view-item-6 .pop{ width: 100%; position: static;}
+.view-item-6 .bg{ background-color: #ebebeb;}
+
+.view-item-7 .pop-0{ width: 103.3%; left: -3.3%; top: 0;}
+.view-item-7 .bg{ position: relative; z-index: 999;}
+
+@keyframes zoomInLT {
 	from {
-		transform: translate3d(100%, 0, 0);
-		visibility: visible;
-		opacity: 0;
-	}
-	10%{
-		opacity: 1;
-	}
-	30%{
-		opacity: 1;
-		transform: translate3d(-100%, 0, 0);
-	}
-	70%{
-		opacity: 1;
-		transform: translate3d(100%, 0, 0);
-	}
-	90%{
-		opacity: 1;
-	}
-	to {
-		transform: translate3d(-100%, 0, 0);
-		opacity: 0;
-		top: 100%;
-	}
-}
-@keyframes fallDown2 {
-	from {
-		transform: translate3d(-200%, 0, 0);
-		visibility: visible;
-		opacity: 0;
-	}
-	10%{
-		opacity: 1;
-	}
-	30%{
-		opacity: 1;
-		transform: translate3d(200%, 0, 0);
-	}
-	70%{
-		opacity: 1;
-		transform: translate3d(-200%, 0, 0);
-	}
-	90%{
-		opacity: 1;
-	}
-	to {
-		transform: translate3d(200%, 0, 0);
-		opacity: 0;
-		top: 100%;
-	}
-}
-@keyframes fallDown3 {
-	from {
-		transform: translate3d(100%, 0, 0);
-		visibility: visible;
-		opacity: 0;
-	}
-	10%{
-		opacity: 1;
-	}
-	30%{
-		opacity: 1;
-		transform: translate3d(-200%, 0, 0);
-	}
-	70%{
-		opacity: 1;
-		transform: translate3d(100%, 0, 0);
-	}
-	90%{
-		opacity: 1;
-	}
-	to {
-		transform: translate3d(-200%, 0, 0);
-		opacity: 0;
-		top: 100%;
-	}
+    opacity: 0;
+    transform-origin: 10% 0;
+    transform: scale3d(.1, .1, .1);
+  }
+
+  100% {
+    opacity: 1;
+    transform-origin: 10% 0;
+    transform: scale3d(1, 1, 1);
+  }
 }
 
-@keyframes fadeOutDown {
-	from {
-		opacity: 1;
-		height: 3.32rem
-	}
-	to {
-		opacity: 0;
-		height: 0;
-	}
+.zoomInLT {
+	animation-name: zoomInLT;
 }
-@keyframes fadeInUp {
+
+@keyframes zoomInRT {
 	from {
-		opacity: 0;
-		height: 0;
-	}
-	to {
-		opacity: 1;
-		height: 3.32rem;
-	}
+    opacity: 0;
+    transform-origin: 90% 0;
+    transform: scale3d(.1, .1, .1);
+  }
+
+  100% {
+    opacity: 1;
+    transform-origin: 90% 0;
+    transform: scale3d(1, 1, 1);
+  }
 }
-@keyframes fadeInRight {
+
+.zoomInRT {
+	animation-name: zoomInRT;
+}
+
+@keyframes zoomInLD {
 	from {
-		opacity: 0;
-		margin-right: -8.2rem;
-	}
-	to {
-		opacity: 1;
-		margin-right: 0;
-	}
+    opacity: 0;
+    transform-origin: 0 100%;
+    transform: scale3d(.1, .1, .1);
+  }
+
+  100% {
+    opacity: 1;
+    transform-origin: 0 100%;
+    transform: scale3d(1, 1, 1);
+  }
+}
+
+.zoomInLD {
+	animation-name: zoomInLD;
+}
+
+@keyframes zoomInRD {
+	from {
+    opacity: 0;
+    transform-origin: 90% 100%;
+    transform: scale3d(.1, .1, .1);
+  }
+
+  100% {
+    opacity: 1;
+    transform-origin: 90% 100%;
+    transform: scale3d(1, 1, 1);
+  }
+}
+
+.zoomInRD {
+	animation-name: zoomInRD;
+}
+
+@keyframes zoomInD {
+	from {
+    opacity: 0;
+    transform-origin: 50% 100%;
+    transform: scale3d(.1, .1, .1);
+  }
+
+  100% {
+    opacity: 1;
+    transform-origin: 50% 100%;
+    transform: scale3d(1, 1, 1);
+  }
+}
+
+.zoomInD {
+	animation-name: zoomInD;
 }

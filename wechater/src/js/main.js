@@ -1,73 +1,70 @@
 /*!
  * vue-common.js
  */
- $.fn.scrollSmooth = function(scrollHeight, duration) {
-	var $el = this;
-	var el  = $el[0];
-	var startPosition = el.scrollTop;
-	var delta = scrollHeight  - startPosition;
-	var startTime = Date.now();
-	function scroll() {
-		var fraction = Math.min(1, (Date.now() - startTime) / duration);
-		el.scrollTop = delta * fraction + startPosition;
-		if(fraction < 1) {
-			setTimeout(scroll, 10);
-		}
-	}
-	scroll();
-};
+
 var templates = {
-	loadingPage: '<div id="loadingPage" @animationend="animateEnd" class="loading-page fast animated" :class="{fadeOut: this.pLoading.percent >= 100}" v-show="!pLoading.done">\
+	loadingPage: '<div id="loadingPage" class="loading-page fast animated" :class="{fadeOut: pLoading.done}" v-show="!pLoading.done" @click="start">\
 		<div class="flex-hv-center h100">\
 			<div class="loading">\
-				<div class="logo"><img class="block" src="src/images/logo.png" /></div>\
-				<div class="loading-bar">\
+				<div class="logo" :class="{hidden: loaded}"><img class="block" src="src/images/logo.png" /></div>\
+				<div class="loading-bar" :class="{hidden: loaded}">\
 					<div class="loading-line" :style="{width: pLoading.percent+\'\%\'}"></div>\
 				</div>\
+				<div class="flex-hv-center">\
+					<div class="btn btn-loaded flex-hv-center" v-show="loaded">点击屏幕开始</div>\
+				</div>\
+			</div>\
+			<div class="text">\
+				<div class="wrap-img"><img src="src/images/loading_text.png" /></div>\
 			</div>\
 		</div>\
 	</div>',
-	messageView: '<div class="message-view animated" :class="{fadeIn: pLoading.percent >= 100}">\
-		<div style="position: absolute; left: 0; top: 0; z-index: 100">{{pMessage.steps}}</div>\
-		<div class="view-item animated" :class="styles(el,key)" v-show="pMessage.steps[0] === key" v-for="(el,key) in pMessage.items" @click="play">\
+	messageView: '<div class="message-view" >\
+		<div class="view-item" @click="skipFn(el,key)" :class="styles(el,key)" v-show="pMessage.steps[0] === key" v-for="(el,key) in pMessage.items">\
 			<div class="pops">\
-				<div class="animated"  @animationend="animateEnd" :class="styles(item,index)" v-show="pMessage.steps[0] === key && pMessage.steps[1] === index" v-for="(item,index) in el.nodes" :style="{left: item.left, top: item.top}">\
+				<div class="animated" @animationend="animateEnd" :class="styles(item,key,index)" v-show="showFn(key,index)" v-for="(item,index) in el.nodes">\
 					<div class="wrap-img"><img class="block" :src="\'src/images/\'+item.pop" /></div>\
 				</div>\
 			</div>\
-			<div class="bg">\
+			<div class="bg" :class="el.classes">\
 				<div class="wrap-img"><img class="block" :src="\'src/images/\'+el.bg" /></div>\
 			</div>\
 		</div>\
 	</div>'
 }
+// :36 :class="{fadeIn: pLoading.done}"
+// <div style="position: absolute; left: 0; top: 0; z-index: 100">{{pMessage.steps}}</div>\
 
 var loadingPage = Vue.extend({
 	template: templates.loadingPage,
 	props: ['pLoading'],
+	data: function(){
+		return {
+			imgCount: 40,
+			loaded: false
+		}
+	},
 	methods: {
 		loading: function(){
 			var self = this;
-			setTimeout(function(){
-				self.pLoading.percent++;
-				if(self.pLoading.percent < 100){
-					self.loading();
-				}else{
-					setTimeout(function(){
-						if(!self.pLoading.done){
-							self.pLoading.done = true;
-						}
-					},2000);
-				}
-			},1)
 		},
-		animateEnd: function(e){
-			console.log('loading hide')
-			this.pLoading.done = true;
+		start: function(){
+			if(this.loaded){
+				this.pLoading.done = true;
+			}
+			jQuery('audio').load();
 		}
 	},
 	mounted: function(){
-		this.loading();
+		var self = this;
+		//this.loading();
+		jQuery('#app').imagesLoaded(function(e){
+			self.loaded = true;
+			//self.pLoading.percent = 100;
+
+		}).progress(function(instance, image){
+			self.pLoading.percent = parseInt(instance.progressedCount / self.imgCount * 100);
+		});
 	}
 });
 
@@ -89,8 +86,13 @@ var messageView = Vue.extend({
 		},
 		'pMessage.steps': {
 			handler: function(a,b){
+				var activeNode = this.pMessage.items[a[0]] && this.pMessage.items[a[0]].nodes[a[1]];
+				if(activeNode && activeNode.audio){
+					jQuery('#'+activeNode.audio)[0].play();
+				}
 				if(a[0] === 0 && a[1] === 2){
 					//this.pause();
+					console.log(a)
 				}
 			},
 			deep: true
@@ -98,24 +100,49 @@ var messageView = Vue.extend({
 	},
 	props: ['pMessage','pLoading'],
 	methods: {
-		styles: function(item,index){
+		skipFn: function(el,key){
+			if(el.skip){
+				this.pMessage.steps = [key+1,0];
+				jQuery('audio').each(function(){
+					jQuery(this)[0].pause();
+				})
+			}
+		},
+		showFn: function(key,index){
+			var self = this;
+			var node = self.pMessage.items[key].nodes[index]
+			var nextNode = self.pMessage.items[key].nodes[index+1];
+			var a = self.pMessage.steps[0];
+			var b = self.pMessage.steps[1];
+			if(node.stay && a === key && index < b){
+				//alert(b+'---'+index+'---'+node.stay)
+				if(index+node.stay >= b){
+					return true;
+				}else{
+					return false;
+				}
+			}else{
+				return a === key && b === index;
+			}
+		},
+		styles: function(item,key,index){
 			var obj = {};
 			obj[item.animateType] = item.animateType;
-			obj[item.speed] = item.speed;
+			var speed = item.speed || 'quickly';
+			obj[speed] = true;
 			if(item.pop){
 				obj['pop'] = true;
 				obj['pop-'+index] = true;
-				if(item.type === 2){
-					obj['os'] = true;
-				}
+				obj[item.classes] = item.classes;
 			}else{
-				obj['view-item-'+index] = true;
+				obj['view-item-'+key] = true;
 			}
+			
 			return obj;
 		},
 		next: function(){
 			var self = this;
-			//console.log(self.pMessage.steps)
+			console.log(self.pMessage.steps)
 			if(this.playing === true){
 				var a = self.pMessage.steps[0];
 				var b = self.pMessage.steps[1];
@@ -124,8 +151,9 @@ var messageView = Vue.extend({
 					self.pMessage.steps = [a,b];
 				}else{
 					a++;
+					b = 0;
 					if(self.pMessage.items[a]){
-						self.pMessage.steps = [a,0];
+						self.pMessage.steps = [a,b];
 					}else{
 						self.playing = false;
 						self.stop = true;
@@ -146,11 +174,22 @@ var messageView = Vue.extend({
 			var b = self.pMessage.steps[1];
 			var delay = self.pMessage.items[a].nodes[b].delay*1000 || 500;
 			setTimeout(function(){
-				self.next();
-			},delay)
+				var audio = self.pMessage.items[a].nodes[b].audio;
+				if(audio){
+					// jQuery('#'+audio).on('ended',function(){
+					// 	self.next();
+					// });
+					setTimeout(function(){
+						self.next();
+					},3000)
+				}else{
+					self.next();
+				}
+				
+			},delay);
 		},
 		start: function(){
-			this.pMessage.steps = [0,0];
+			this.pMessage.steps = [5,0];
 		}
 	},
 	mounted: function(){
@@ -173,47 +212,258 @@ var indexApp = new Vue({
 					{
 						view: 0,
 						bg: 'bg_1.jpg',
-						animateType: 'fadeIn',
 						speed: 'fast',
 						nodes: [
 							{
 								pop: 'pop_1_1.png',
-								left: "10%",
-								top: "10%",
-								animateType: 'zoomIn'
-							},
-							{
-								pop: 'pop_1_2.png',
-								left: "50%",
-								top: "40%",
-								animateType: 'jackInTheBox'
-							},
-							{
-								type: 2,
-								pop: 'os_1.png',
-								animateType: 'fadeIn',
-								speed: 'fast',
-								delay: 2
+								delay: 2,
+								animateType: 'fadeInDown'
 							}
 						]
 					},
 					{
 						view: 1,
 						bg: 'bg_2.jpg',
-						animateType: 'fadeIn',
 						speed: 'fast',
 						nodes: [
 							{
 								pop: 'pop_2_1.png',
-								left: "10%",
-								top: "10%",
-								animateType: 'jackInTheBox'
+								delay: 2,
+								animateType: 'zoomInD'
 							},
 							{
 								pop: 'pop_2_2.png',
-								left: "50%",
-								top: "40%",
+								delay: 2,
+								animateType: 'zoomInLD'
+							},
+							{
+								pop: 'pop_2_3.png',
+								delay: 2,
+								animateType: 'zoomInD'
+							},
+							{
+								pop: 'pop_2_4.png',
+								delay: 2,
+								animateType: 'zoomInLD'
+							},
+							{
+								pop: 'pop_2_5.png',
+								delay: 2,
+								stay: 1,
+								animateType: 'zoomInRD'
+							},
+							{
+								classes: 'os flex-hv-center',
+								pop: 'os_2_1.png',
+								delay: 3,
 								animateType: 'fadeIn'
+							},
+							{
+								pop: 'pop_2_6.png',
+								delay: 2,
+								stay: 1,
+								animateType: 'zoomInRD'
+							},
+							{
+								classes: 'os flex-hv-center',
+								pop: 'os_2_2.png',
+								delay: 3,
+								animateType: 'fadeIn'
+							},
+							{
+								pop: 'pop_2_7.png',
+								delay: 2,
+								animateType: 'zoomInLD'
+							},
+							{
+								pop: 'pop_2_8.png',
+								delay: 2,
+								animateType: 'zoomInRD'
+							},
+							{
+								pop: 'pop_2_9.png',
+								delay: 2,
+								animateType: 'zoomInD'
+							},
+							{
+								classes: 'os black flex-hv-center',
+								pop: 'os_2_3.png',
+								delay: 2,
+								animateType: 'fadeIn'
+							}
+						]
+					},
+					{
+						view: 2,
+						bg: 'bg_3.jpg',
+						speed: 'fast',
+						nodes: [
+							{
+								pop: 'pop_3_1.png',
+								delay: 2,
+								animateType: 'zoomInLD'
+							},
+							{
+								pop: 'pop_3_2.png',
+								delay: 2,
+								stay: 1,
+								animateType: 'zoomInRD'
+							},
+							{
+								classes: 'os space flex-h-center',
+								pop: 'os_3_1.png',
+								delay: 2,
+								stay: 1,
+								animateType: 'slideInDown'
+							},
+							{
+								classes: 'os flex-hv-center',
+								pop: 'os_3_2.png',
+								delay: 3,
+								animateType: 'fadeIn'
+							},
+							{
+								classes: 'os black flex-hv-center',
+								pop: 'os_3_3.png',
+								delay: 2,
+								animateType: 'fadeIn'
+							}
+						]
+					},
+					{
+						view: 3,
+						bg: 'bg_4.jpg',
+						speed: 'fast',
+						nodes: [
+							{
+								pop: 'pop_4_1.png',
+								delay: 2,
+								animateType: 'zoomInD'
+							},
+							{
+								pop: 'pop_4_2.png',
+								delay: 2,
+								animateType: 'zoomInRT'
+							},
+							{
+								pop: 'pop_4_3.png',
+								delay: 2,
+								animateType: 'zoomInRT'
+							},
+							{
+								pop: 'pop_4_4.png',
+								delay: 2,
+								animateType: 'zoomInRT'
+							},
+							{
+								classes: 'os flex-h-center',
+								pop: 'os_4_1.png',
+								delay: 3,
+								animateType: 'fadeInDown'
+							},
+							{
+								classes: 'os black flex-hv-center',
+								pop: 'os_4_2.png',
+								delay: 2,
+								animateType: 'fadeIn'
+							}
+						]
+					},
+					{
+						view: 4,
+						bg: 'bg_3.jpg',
+						speed: 'fast',
+						nodes: [
+							{
+								pop: 'pop_5_1.png',
+								delay: 2,
+								animateType: 'zoomInLD'
+							},
+							{
+								pop: 'pop_5_2.png',
+								delay: 2,
+								animateType: 'zoomInRD'
+							},
+							{
+								pop: 'pop_5_3.png',
+								delay: 2,
+								animateType: 'zoomInLD'
+							},
+							{
+								pop: 'pop_5_4.png',
+								delay: 2,
+								stay: 1,
+								animateType: 'zoomInRD'
+							},
+							{
+								classes: 'os flex-hv-center',
+								pop: 'os_5_1.png',
+								delay: 3,
+								animateType: 'fadeIn'
+							},
+							{
+								classes: 'os space flex-h-center',
+								pop: 'os_5_2.png',
+								delay: 2,
+								animateType: 'slideInDown'
+							}
+						]
+					},
+					{
+						view: 4,
+						bg: 'bg_6.png',
+						speed: 'fast',
+						skip: true,
+						nodes: [
+							{
+								pop: 'pop_6_1.png',
+								delay: 2,
+								audio: 'audio-1',
+								animateType: 'zoomInD'
+							}
+						]
+					},
+					{
+						view: 5,
+						classes: 'flex flex-v-bottom',
+						bg: 'bg_7.jpg',
+						speed: 'fast',
+						nodes: [
+							{
+								pop: 'pop_7_1.png',
+								delay: 1,
+								stay: 3,
+								animateType: 'fadeInRight'
+							},
+							{
+								pop: 'pop_7_2.png',
+								delay: 2,
+								stay: 2,
+								animateType: 'fadeInLeft'
+							},
+							{
+								pop: 'pop_7_3.png',
+								delay: 1,
+								stay: 1,
+								animateType: 'fadeInRight'
+							},
+							{
+								pop: 'pop_7_4.png',
+								delay: 2,
+								animateType: 'fadeInLeft'
+							}
+						]
+					},
+					{
+						view: 5,
+						bg: 'bg_8.png',
+						speed: 'fast',
+						nodes: [
+							{
+								pop: 'pop_8_1.png',
+								delay: 2,
+								audio: 'audio-2',
+								animateType: 'zoomInD'
 							}
 						]
 					}
@@ -246,7 +496,12 @@ var indexApp = new Vue({
 			console.log(this)
 		}
 	},
+	created: function(){
+		jQuery('audio').load();
+	},
 	mounted: function(){
-		
+		var h = parseInt(jQuery(this.$el).width() * 2017 / 1242);
+		jQuery(this.$el).css({height:h});
 	}
 });
+
