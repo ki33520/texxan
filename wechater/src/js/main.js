@@ -53,6 +53,7 @@ var loadingPage = Vue.extend({
 				this.pLoading.done = true;
 			}
 			jQuery('audio').load();
+			jQuery('#bgm')[0].play();
 		}
 	},
 	mounted: function(){
@@ -73,7 +74,8 @@ var messageView = Vue.extend({
 	data: function(){
 		return {
 			playing: false,
-			stop: false
+			stop: false,
+			activeSkip: false,
 		}
 	},
 	watch: {
@@ -88,6 +90,7 @@ var messageView = Vue.extend({
 			handler: function(a,b){
 				var activeNode = this.pMessage.items[a[0]] && this.pMessage.items[a[0]].nodes[a[1]];
 				if(activeNode && activeNode.audio){
+					jQuery('#bgm')[0].pause();
 					jQuery('#'+activeNode.audio)[0].play();
 				}
 				if(a[0] === 0 && a[1] === 2){
@@ -102,6 +105,7 @@ var messageView = Vue.extend({
 	methods: {
 		skipFn: function(el,key){
 			if(el.skip){
+				this.activeSkip = true;
 				this.pMessage.steps = [key+1,0];
 				jQuery('audio').each(function(){
 					jQuery(this)[0].pause();
@@ -174,22 +178,24 @@ var messageView = Vue.extend({
 			var b = self.pMessage.steps[1];
 			var delay = self.pMessage.items[a].nodes[b].delay*1000 || 500;
 			setTimeout(function(){
-				var audio = self.pMessage.items[a].nodes[b].audio;
-				if(audio){
-					// jQuery('#'+audio).on('ended',function(){
-					// 	self.next();
-					// });
-					setTimeout(function(){
+				if(!self.activeSkip){
+					var audio = self.pMessage.items[a].nodes[b].audio;
+					if(audio){
+						jQuery('#'+audio).on('ended',function(){
+							jQuery('#bgm')[0].play();
+							self.next();
+						});
+					}else{
 						self.next();
-					},3000)
+					}
 				}else{
-					self.next();
+					self.activeSkip = false;
 				}
 				
 			},delay);
 		},
 		start: function(){
-			this.pMessage.steps = [5,0];
+			this.pMessage.steps = [0,0];
 		}
 	},
 	mounted: function(){
